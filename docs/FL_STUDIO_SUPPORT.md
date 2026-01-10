@@ -11,7 +11,7 @@ OwlPlug now supports FL Studio project files with full feature parity with Ablet
 - **Plugin Analysis**: VST2, VST3, and AU plugin references
 - **Plugin Lookup**: Matching project plugins against installed plugins
 - **UI Integration**: Full display with FL Studio logo and project details
-- **Version Support**: FL Studio 12.x through 21.x
+- **Version Support**: FL Studio 12.x through 24.x and future versions (25+, 26+, etc.)
 
 ## Implementation
 
@@ -62,9 +62,14 @@ FLdt (Data)
 #### Version Formatting
 
 Version numbers are stored as integers and formatted as:
-- `2008` → "20.8"
+- `2400` → "24.0" (FL Studio 24.0)
+- `2411` → "24.1.1"
 - `2100` → "21.0"
+- `2008` → "20.8"
 - `1234` → "12.3.4"
+
+The version formatting algorithm is future-proof and automatically supports
+all current and future FL Studio versions (25+, 26+, etc.).
 
 ## Building
 
@@ -162,10 +167,15 @@ To extend or modify FL Studio support:
 
 ### Supported FL Studio Versions
 
-- FL Studio 12.x
-- FL Studio 20.x
+- FL Studio 12.x (legacy)
+- FL Studio 20.x 
 - FL Studio 21.x
-- Future versions (backward compatible format)
+- FL Studio 24.x (latest as of 2024-2025)
+- FL Studio 25.x and beyond (future-proof)
+
+**Note:** The binary format parser is designed to handle any FL Studio version
+from 12.x onwards, as well as future versions (25+, 26+, etc.), as long as 
+Image-Line maintains backward compatibility in the .flp format structure.
 
 ### Plugin Formats
 
@@ -188,6 +198,58 @@ When contributing to FL Studio support:
 3. Update this documentation
 4. Ensure backward compatibility with older FL Studio versions
 5. Run full test suite before submitting PR
+
+## Troubleshooting
+
+### Common Issues
+
+**Problem: FL Studio projects not detected**
+- Solution: Ensure .flp file extension (case-insensitive)
+- Check project directory is configured in Settings → Projects
+- Run "Sync Projects" to scan for new files
+
+**Problem: No plugins found in project**
+- Solution: This is normal for projects without VST/VST3/AU plugins
+- Native FL Studio plugins are not tracked
+- Check if plugins are actually VST-based, not FL native
+
+**Problem: Parse error on specific project**
+- Solution: File may be corrupted or use unsupported format
+- Try opening in FL Studio first to verify it's valid
+- Check OwlPlug logs for detailed error messages
+- Report issue with FL Studio version number
+
+**Problem: Wrong plugin count**
+- Solution: Parser may filter out duplicates or non-plugin entries
+- Some mixer/pattern entries are excluded intentionally
+- Check logs for "duplicate plugins removed" message
+
+**Problem: Missing plugin paths**
+- Solution: Some FL Studio projects don't store full paths
+- Plugin names are still extracted and searchable
+- Try resaving project in FL Studio to update metadata
+
+### Performance
+
+**Large Projects**:
+- Files up to 500MB are supported
+- Parsing time scales with project complexity
+- Check logs for parsing statistics
+
+**Slow Scanning**:
+- Initial scan indexes all projects
+- Subsequent scans are incremental
+- Consider excluding temp/backup directories
+
+### Reporting Issues
+
+When reporting FL Studio support issues, include:
+
+1. FL Studio version number
+2. OwlPlug version
+3. Project file size
+4. Error message from logs
+5. Sample .flp file if possible
 
 ## References
 

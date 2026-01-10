@@ -80,6 +80,27 @@ public class FLStudioProjectExplorerTest {
   }
 
   @Test
+  public void flStudio24ValidProject() throws ProjectExplorerException {
+    FLStudioProjectExplorer explorer = new FLStudioProjectExplorer();
+
+    File file = new File(this.getClass().getClassLoader()
+            .getResource("projects/flstudio/test_project_fl24.flp").getFile());
+
+    DawProject project = explorer.explore(file);
+    
+    // Verify project metadata for FL Studio 24
+    assertNotNull(project, "Project should not be null");
+    assertEquals("test_project_fl24", project.getName());
+    assertEquals(DawApplication.FL_STUDIO, project.getApplication());
+    assertEquals("FL Studio 24.1", project.getAppFullName());
+    assertEquals("2410", project.getFormatVersion());
+    
+    // Verify at least one plugin was found
+    assertTrue(project.getPlugins().size() >= 1, 
+               "FL Studio 24 project should contain at least 1 plugin");
+  }
+
+  @Test
   public void canExploreFlpFile() {
     FLStudioProjectExplorer explorer = new FLStudioProjectExplorer();
     

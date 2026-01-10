@@ -47,6 +47,11 @@ public class FLStudioParser {
   private static final int EVENT_TEXT = 0xC0;            // 192 - Generic text event
   private static final int EVENT_DATA = 0xD0;            // 208 - Generic data event
 
+  // Safety limits for parsing
+  private static final long MAX_FILE_SIZE = 500 * 1024 * 1024; // 500MB max
+  private static final int MAX_EVENT_SIZE = 10 * 1024 * 1024;  // 10MB per event max
+  private static final int MAX_STRING_LENGTH = 32 * 1024;      // 32KB max string
+
   // Plugin name filters
   private static final String[] EXCLUDED_PLUGIN_NAMES = {"pattern", "mixer", "master"};
 
@@ -94,11 +99,25 @@ public class FLStudioParser {
    *
    * @param file FL Studio .flp file
    * @return List of plugins found in the project
-   * @throws IOException if file cannot be read
+   * @throws IOException if file cannot be read or is malformed
    */
   public List<FLPlugin> parseProject(File file) throws IOException {
+    // Validate file size
+    long fileSize = file.length();
+    if (fileSize > MAX_FILE_SIZE) {
+      throw new IOException(String.format(
+          "FL Studio project file is too large: %d bytes (max: %d bytes)", 
+          fileSize, MAX_FILE_SIZE));
+    }
+    
+    if (fileSize < 20) {
+      throw new IOException("FL Studio project file is too small to be valid: " + fileSize + " bytes");
+    }
+
     List<FLPlugin> plugins = new ArrayList<>();
-    FLPlugin currentPlugin = null;
+    long startTime = System.currentTimeMillis();
+    
+    log.debug("Parsing FL Studio project: {} ({} bytes)", file.getName(), fileSize);
 
     try (DataInputStream dis = new DataInputStream(new FileInputStream(file))) {
 
@@ -108,19 +127,30 @@ public class FLStudioParser {
       String headerStr = new String(header, StandardCharsets.US_ASCII);
 
       if (!"FLhd".equals(headerStr)) {
-        throw new IOException("Invalid FL Studio project file: missing FLhd header");
+        throw new IOException(String.format(
+            "Invalid FL Studio project file: expected 'FLhd' header, got '%s'", headerStr));
       }
 
       // Read header chunk size (4 bytes, little-endian)
       int headerChunkSize = readInt32LE(dis);
+      if (headerChunkSize < 0 || headerChunkSize > MAX_EVENT_SIZE) {
+        throw new IOException("Invalid header chunk size: " + headerChunkSize);
+      }
 
       // Read format/version (2 bytes, little-endian)
       projectVersion = readInt16LE(dis);
-      log.debug("FL Studio project version: {}", projectVersion);
+      log.debug("FL Studio project version: {} (formatted: {})", 
+                projectVersion, formatVersionForLog(projectVersion));
 
-      // Skip rest of header
+      // Skip rest of header with validation
       if (headerChunkSize > 2) {
-        dis.skipBytes(headerChunkSize - 2);
+        int skipBytes = headerChunkSize - 2;
+        if (skipBytes > 0) {
+          long skipped = dis.skip(skipBytes);
+          if (skipped != skipBytes) {
+            throw new IOException("Unexpected end of file while reading header");
+          }
+        }
       }
 
       // Read data chunk header
@@ -129,18 +159,24 @@ public class FLStudioParser {
       String dataHeaderStr = new String(dataHeader, StandardCharsets.US_ASCII);
 
       if (!"FLdt".equals(dataHeaderStr)) {
-        throw new IOException("Invalid FL Studio project file: missing FLdt data header");
+        throw new IOException(String.format(
+            "Invalid FL Studio project file: expected 'FLdt' data header, got '%s'", dataHeaderStr));
       }
 
       // Read data chunk size
       int dataChunkSize = readInt32LE(dis);
-      log.debug("Data chunk size: {}", dataChunkSize);
+      if (dataChunkSize < 0 || dataChunkSize > MAX_FILE_SIZE) {
+        throw new IOException("Invalid data chunk size: " + dataChunkSize);
+      }
+      log.debug("Data chunk size: {} bytes", dataChunkSize);
 
       // Parse events
       int bytesRead = 0;
+      int eventCount = 0;
       while (bytesRead < dataChunkSize && dis.available() > 0) {
         int eventId = dis.readUnsignedByte();
         bytesRead++;
+        eventCount++;
 
         // Determine event size and read data
         byte[] eventData;
@@ -154,6 +190,12 @@ public class FLStudioParser {
           // Variable length text/data event
           int length = dis.readUnsignedByte();
           bytesRead++;
+          
+          if (length < 0 || length > MAX_STRING_LENGTH) {
+            log.warn("Skipping event {} with invalid length: {}", eventId, length);
+            continue;
+          }
+          
           eventSize = length;
           eventData = new byte[length];
           dis.readFully(eventData);
@@ -168,6 +210,15 @@ public class FLStudioParser {
           // Variable length event with DWORD size
           int length = readInt32LE(dis);
           bytesRead += 4;
+          
+          if (length < 0 || length > MAX_EVENT_SIZE) {
+            log.warn("Skipping event {} with invalid length: {}", eventId, length);
+            // Try to skip the data
+            long skipped = dis.skip(Math.min(length, dataChunkSize - bytesRead));
+            bytesRead += skipped;
+            continue;
+          }
+          
           eventSize = length;
           eventData = new byte[length];
           dis.readFully(eventData);
@@ -179,9 +230,69 @@ public class FLStudioParser {
           processEvent(eventId, eventData, plugins);
         }
       }
+      
+      // Log parsing statistics
+      long parseTime = System.currentTimeMillis() - startTime;
+      log.info("Parsed FL Studio project: {} events, {} plugins found in {}ms", 
+               eventCount, plugins.size(), parseTime);
     }
 
-    return plugins;
+    // Remove duplicate plugins
+    return deduplicatePlugins(plugins);
+  }
+
+  /**
+   * Remove duplicate plugins based on name and path.
+   */
+  private List<FLPlugin> deduplicatePlugins(List<FLPlugin> plugins) {
+    List<FLPlugin> unique = new ArrayList<>();
+    for (FLPlugin plugin : plugins) {
+      boolean isDuplicate = false;
+      for (FLPlugin existing : unique) {
+        if (pluginsMatch(plugin, existing)) {
+          isDuplicate = true;
+          break;
+        }
+      }
+      if (!isDuplicate) {
+        unique.add(plugin);
+      }
+    }
+    if (unique.size() < plugins.size()) {
+      log.debug("Removed {} duplicate plugins", plugins.size() - unique.size());
+    }
+    return unique;
+  }
+
+  /**
+   * Check if two plugins are the same.
+   */
+  private boolean pluginsMatch(FLPlugin p1, FLPlugin p2) {
+    if (p1.getName() != null && p2.getName() != null) {
+      if (!p1.getName().equals(p2.getName())) {
+        return false;
+      }
+    }
+    if (p1.getPath() != null && p2.getPath() != null) {
+      return p1.getPath().equals(p2.getPath());
+    }
+    return p1.getName() != null && p1.getName().equals(p2.getName());
+  }
+
+  /**
+   * Format version number for logging.
+   */
+  private String formatVersionForLog(int version) {
+    if (version >= 1000) {
+      int major = version / 100;
+      int minor = (version % 100) / 10;
+      int patch = version % 10;
+      if (patch == 0) {
+        return String.format("%d.%d", major, minor);
+      }
+      return String.format("%d.%d.%d", major, minor, patch);
+    }
+    return String.valueOf(version);
   }
 
   private void processEvent(int eventId, byte[] data, List<FLPlugin> plugins) {

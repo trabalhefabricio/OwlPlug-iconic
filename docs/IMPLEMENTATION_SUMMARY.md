@@ -19,7 +19,8 @@ FL Studio (.flp) project support has been successfully implemented in OwlPlug wi
 
 ### Additional Requirements (Added During Development)
 ✅ **Research FL Studio file format** - Documented binary format, event IDs, version handling
-✅ **Ensure compatibility with multiple FL versions** - Supports FL Studio 12.x through 21.x
+✅ **Ensure compatibility with multiple FL versions** - Supports FL Studio 12.x through 24.x and beyond
+✅ **Support newest FL Studio versions** - Future-proof algorithm handles FL 25+, 26+, etc.
 ✅ **Add dependencies** - All dependencies properly configured in pom.xml
 ✅ **Add auto-build configuration** - PR build workflow with test reports
 

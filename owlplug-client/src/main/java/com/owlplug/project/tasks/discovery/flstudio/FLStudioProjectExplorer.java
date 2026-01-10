@@ -121,7 +121,14 @@ public class FLStudioProjectExplorer implements ProjectExplorer {
   /**
    * Formats FL Studio version number to human-readable string.
    * Version format: Major * 100 + Minor * 10 + Patch
-   * Examples: 2100 -> "21.0", 2008 -> "20.8", 1234 -> "12.3.4"
+   * Examples: 
+   *   2400 -> "24.0" (FL Studio 24)
+   *   2411 -> "24.1.1"
+   *   2100 -> "21.0"
+   *   2008 -> "20.8"
+   * 
+   * This algorithm is future-proof and supports all FL Studio versions
+   * from 12.x through 24.x and beyond (25+, 26+, etc.)
    */
   private String formatFlStudioVersion(int version) {
     if (version >= 1000) {
