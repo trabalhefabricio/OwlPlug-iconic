@@ -81,7 +81,12 @@ A Link allows you to create and manage symlinks across your filesystem and plugi
 
 OwlPlug can scan DAW projects to extract referenced plugins. Plugins references in project files are compared to plugins installed in configured directories. This way, users can quickly identify missing plugins required to open projects.
 
-The list of compatible DAWs is available in the [documentation](https://github.com/DropSnorz/OwlPlug/wiki/Projects-and-DAW-Support)
+**Supported DAWs:**
+- Ableton Live (.als)
+- FL Studio (.flp) - *New!*
+- Reaper (.rpp)
+
+For more details, see the [documentation](https://github.com/DropSnorz/OwlPlug/wiki/Projects-and-DAW-Support) and [FL Studio Support](docs/FL_STUDIO_SUPPORT.md)
 
 ## Explore and download Plugins
 

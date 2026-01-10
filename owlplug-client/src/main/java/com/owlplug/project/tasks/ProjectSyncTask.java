@@ -24,6 +24,7 @@ import com.owlplug.core.utils.FileUtils;
 import com.owlplug.project.model.DawProject;
 import com.owlplug.project.repositories.DawProjectRepository;
 import com.owlplug.project.tasks.discovery.ableton.AbletonProjectExplorer;
+import com.owlplug.project.tasks.discovery.flstudio.FLStudioProjectExplorer;
 import com.owlplug.project.tasks.discovery.reaper.ReaperProjectExplorer;
 import java.io.File;
 import java.util.ArrayList;
@@ -76,6 +77,7 @@ public class ProjectSyncTask extends AbstractTask {
       this.commitProgress(1);
       AbletonProjectExplorer abletonExplorer = new AbletonProjectExplorer();
       ReaperProjectExplorer reaperExplorer = new ReaperProjectExplorer();
+      FLStudioProjectExplorer flStudioExplorer = new FLStudioProjectExplorer();
 
       if (abletonExplorer.canExploreFile(file)) {
         this.updateMessage("Analyzing Ableton file: " + file.getAbsolutePath());
@@ -84,6 +86,10 @@ public class ProjectSyncTask extends AbstractTask {
       } else if (reaperExplorer.canExploreFile(file)) {
         this.updateMessage("Analyzing Reaper file: " + file.getAbsolutePath());
         DawProject project = reaperExplorer.explore(file);
+        projectRepository.save(project);
+      } else if (flStudioExplorer.canExploreFile(file)) {
+        this.updateMessage("Analyzing FL Studio file: " + file.getAbsolutePath());
+        DawProject project = flStudioExplorer.explore(file);
         projectRepository.save(project);
       }
     }
