@@ -101,16 +101,20 @@ public class FLStudioProjectExplorerTest {
   }
 
   @Test
-  public void canExploreFlpFile() {
+  public void canExploreFlpFile() throws Exception {
     FLStudioProjectExplorer explorer = new FLStudioProjectExplorer();
     
-    File flpFile = new File("/path/to/project.flp");
+    // Create temporary files for testing
+    File flpFile = File.createTempFile("project", ".flp");
+    flpFile.deleteOnExit();
     assertTrue(explorer.canExploreFile(flpFile));
     
-    File FlpUpperCase = new File("/path/to/project.FLP");
+    File FlpUpperCase = File.createTempFile("project", ".FLP");
+    FlpUpperCase.deleteOnExit();
     assertTrue(explorer.canExploreFile(FlpUpperCase));
     
-    File nonFlpFile = new File("/path/to/project.als");
+    File nonFlpFile = File.createTempFile("project", ".als");
+    nonFlpFile.deleteOnExit();
     assertTrue(!explorer.canExploreFile(nonFlpFile));
   }
 }

@@ -120,10 +120,10 @@ public class FLStudioProjectExplorer implements ProjectExplorer {
 
   /**
    * Formats FL Studio version number to human-readable string.
-   * Version format: Major * 100 + Minor * 10 + Patch
+   * Version format: XXYY where XX is major version and YY is minor version
    * Examples: 
    *   2400 -> "24.0" (FL Studio 24)
-   *   2411 -> "24.1.1"
+   *   2410 -> "24.1"
    *   2100 -> "21.0"
    *   2008 -> "20.8"
    * 
@@ -133,15 +133,12 @@ public class FLStudioProjectExplorer implements ProjectExplorer {
   private String formatFlStudioVersion(int version) {
     if (version >= 1000) {
       int major = version / 100;
-      int minor = (version % 100) / 10;
-      int patch = version % 10;
+      int minor = version % 100;
 
-      if (patch == 0 && minor == 0) {
+      if (minor == 0) {
         return String.valueOf(major);
-      } else if (patch == 0) {
-        return String.format("%d.%d", major, minor);
       } else {
-        return String.format("%d.%d.%d", major, minor, patch);
+        return String.format("%d.%d", major, minor);
       }
     }
     // Fallback for older or unknown version formats
