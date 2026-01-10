@@ -82,6 +82,7 @@ public class ApplicationDefaults {
   public final Image openAudioLogoSmall = new Image(ApplicationDefaults.class.getResourceAsStream("/media/open-audio-16.png"));
   public final Image abletonLogoImage = new Image(getClass().getResourceAsStream("/icons/ableton-white-16.png"));
   public final Image reaperLogoImage = new Image(getClass().getResourceAsStream("/icons/reaper-white-16.png"));
+  public final Image flstudioLogoImage = new Image(getClass().getResourceAsStream("/icons/flstudio-white-16.png"));
 
   public final Image errorIconImage = new Image(
           getClass().getResourceAsStream("/icons/error-red-16.png"));
@@ -169,6 +170,7 @@ public class ApplicationDefaults {
     return switch (application) {
       case ABLETON -> abletonLogoImage;
       case REAPER -> reaperLogoImage;
+      case FL_STUDIO -> flstudioLogoImage;
     };
   }
 
