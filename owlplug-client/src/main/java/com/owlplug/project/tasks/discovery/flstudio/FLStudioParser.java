@@ -47,6 +47,16 @@ public class FLStudioParser {
   private static final int EVENT_TEXT = 0xC0;            // 192 - Generic text event
   private static final int EVENT_DATA = 0xD0;            // 208 - Generic data event
 
+  // Plugin name filters
+  private static final String[] EXCLUDED_PLUGIN_NAMES = {"pattern", "mixer", "master"};
+
+  // Plugin file extensions
+  private static final String EXT_DLL = ".dll";
+  private static final String EXT_VST = ".vst";
+  private static final String EXT_VST3 = ".vst3";
+  private static final String EXT_SO = ".so";
+  private static final String EXT_COMPONENT = ".component";
+
   private int projectVersion;
 
   public static class FLPlugin {
@@ -273,10 +283,12 @@ public class FLStudioParser {
     }
     // Filter out empty strings and common non-plugin names
     String lower = name.toLowerCase();
-    return !lower.contains("pattern") 
-        && !lower.contains("mixer") 
-        && !lower.equals("master")
-        && name.length() > 1;
+    for (String excluded : EXCLUDED_PLUGIN_NAMES) {
+      if (lower.contains(excluded) || lower.equals(excluded)) {
+        return false;
+      }
+    }
+    return name.length() > 1;
   }
 
   private boolean isPluginPath(String path) {
@@ -285,11 +297,11 @@ public class FLStudioParser {
     }
     // Check if it's a VST/VST3 path
     String lower = path.toLowerCase();
-    return lower.contains(".dll") 
-        || lower.contains(".vst") 
-        || lower.contains(".vst3")
-        || lower.contains(".so")
-        || lower.contains(".component");
+    return lower.contains(EXT_DLL) 
+        || lower.contains(EXT_VST) 
+        || lower.contains(EXT_VST3)
+        || lower.contains(EXT_SO)
+        || lower.contains(EXT_COMPONENT);
   }
 
   private int readInt32LE(DataInputStream dis) throws IOException {
