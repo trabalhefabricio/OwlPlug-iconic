@@ -1,0 +1,7 @@
+# Ignore the actual VST2 SDK headers (proprietary)
+aeffect.h
+aeffectx.h
+
+# But keep the placeholder file and README
+!PLACE_VST2_SDK_HEADERS_HERE.txt
+!README.md
