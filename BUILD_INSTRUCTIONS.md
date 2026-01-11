@@ -177,6 +177,7 @@ If you later obtain the VST2 SDK and want to enable VST2 support:
      - Windows: `..\..\..\..\external\vst2_sdk`
 
 3. Edit `owlplug-host/src/main/juce/JuceLibraryCode/AppConfig.h`:
-   - Change `#define JUCE_PLUGINHOST_VST 0` to `#define JUCE_PLUGINHOST_VST 1`
+   - Change `#define   JUCE_PLUGINHOST_VST 0` to `#define   JUCE_PLUGINHOST_VST 1`
+   - Note: Keep the existing spacing format in the file
 
 4. Rebuild the native components using the build scripts above
