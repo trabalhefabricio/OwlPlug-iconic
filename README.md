@@ -155,12 +155,12 @@ There are several ways to support and get involved in the OwlPlug development.
    git submodule update --init --recursive
    ```
 
-3. **VST2 Support Status**: VST2 support is currently **disabled** by default in this build configuration.
-   - ⚠️ **IMPORTANT**: With VST2 disabled, the application will NOT be able to scan or load VST2 plugins
-   - The project will build and run without VST2 SDK headers
-   - VST3, AU, and LV2 plugin support remain fully functional
+3. **VST2 Support**: VST2 plugin support is **enabled** in this build configuration.
+   - ⚠️ **IMPORTANT**: You must provide the VST2 SDK headers to build the native components
+   - Obtain the VST2 SDK headers (`aeffect.h` and `aeffectx.h`) - see `owlplug-host/external/vst2_sdk/README.md` for details
+   - Place them in `owlplug-host/external/vst2_sdk/pluginterfaces/vst2.x/`
    - **See [BUILD_INSTRUCTIONS.md](BUILD_INSTRUCTIONS.md) for detailed build and installation instructions**
-   - If you need VST2 support, see the "Re-enabling VST2 Support" section in BUILD_INSTRUCTIONS.md
+   - The application will support VST2, VST3, AU, and LV2 plugins
 
 4. Build the project
    ```sh
