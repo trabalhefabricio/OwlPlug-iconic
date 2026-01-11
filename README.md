@@ -136,18 +136,51 @@ There are several ways to support and get involved in the OwlPlug development.
 
 ## Development Setup
 
+### Prerequisites
+
+- Java 25 or later
+- Maven 3.x
+- Git
+
+### Building from Source
+
 1. Clone or download project sources
-2. Run following commands
-```sh
-# Install dependencies
-mvn clean install
-# Move to owlplug client folder
-cd owlplug-client
-# (Optional) Create the runnable JAR file in /target/ folder
-mvn clean install spring-boot:repackage
-# Run owlplug
-mvn spring-boot:run
-```
+   ```sh
+   git clone https://github.com/DropSnorz/OwlPlug.git
+   cd OwlPlug
+   ```
+
+2. Initialize submodules
+   ```sh
+   git submodule update --init --recursive
+   ```
+
+3. **(Optional) VST2 Support**: If you want to build with VST2 plugin support, you need to provide the VST2 SDK headers:
+   - Obtain the VST2 SDK headers (`aeffect.h` and `aeffectx.h`) - see `owlplug-host/external/vst2_sdk/README.md` for details
+   - Place them in `owlplug-host/external/vst2_sdk/pluginterfaces/vst2.x/`
+   - **Note**: If you skip this step, you can still build by disabling VST2 support (see instructions in the VST2 SDK README)
+
+4. Build the project
+   ```sh
+   # Install dependencies
+   mvn clean install
+   # Move to owlplug client folder
+   cd owlplug-client
+   # (Optional) Create the runnable JAR file in /target/ folder
+   mvn clean install spring-boot:repackage
+   # Run owlplug
+   mvn spring-boot:run
+   ```
+
+### Building Native Components
+
+The native host component (JUCE-based) is built separately using platform-specific build scripts:
+
+- **Linux**: `./build/build-host-linux.sh`
+- **macOS**: `./build/build-host-osx.sh`
+- **Windows**: `./build/build-host-win.sh`
+
+These scripts require the Projucer tool from JUCE. Run `./build/download-projucer.sh` to download it first.
 
 # License
 
