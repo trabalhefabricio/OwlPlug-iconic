@@ -1,0 +1,15 @@
+/*
+ * VST2 SDK Header Placeholder
+ * 
+ * This is a placeholder file. The actual VST2 SDK headers are required to build
+ * OwlPlug with VST2 plugin support.
+ * 
+ * Please obtain the VST2 SDK headers (aeffect.h and aeffectx.h) and place them
+ * in this directory. See the README.md file in the vst2_sdk directory for
+ * detailed instructions.
+ * 
+ * The VST2 SDK is proprietary software owned by Steinberg Media Technologies GmbH.
+ * You must have a valid license to use it.
+ */
+
+#error "VST2 SDK headers are missing. Please see the README.md in the owlplug-host/external/vst2_sdk directory for instructions."
