@@ -46,7 +46,14 @@ jobs:
       run: mvn test
     
     - name: Build client JAR
-      run: cd owlplug-client && mvn -B package -DskipTests
+      run: cd owlplug-client && mvn -B spring-boot:repackage -DskipTests
+    
+    - name: Upload JAR artifact
+      uses: actions/upload-artifact@v6
+      with:
+        name: owlplug-client-jar-pr
+        path: owlplug-client/target/owlplug-client-*.jar
+        if-no-files-found: warn
     
     - name: Generate test report
       if: always()

@@ -155,10 +155,11 @@ There are several ways to support and get involved in the OwlPlug development.
    git submodule update --init --recursive
    ```
 
-3. **(Optional) VST2 Support**: If you want to build with VST2 plugin support, you need to provide the VST2 SDK headers:
-   - Obtain the VST2 SDK headers (`aeffect.h` and `aeffectx.h`) - see `owlplug-host/external/vst2_sdk/README.md` for details
+3. **VST2 Support**: VST2 plugin support is **enabled** in this build configuration.
+   - ⚠️ **You need VST2 SDK headers to build**
+   - Get the headers (`aeffect.h` and `aeffectx.h`) - see [BUILD_INSTRUCTIONS.md](BUILD_INSTRUCTIONS.md)
    - Place them in `owlplug-host/external/vst2_sdk/pluginterfaces/vst2.x/`
-   - **Note**: If you skip this step, you can still build by disabling VST2 support (see instructions in the VST2 SDK README)
+   - The app will support VST2, VST3, AU, and LV2 plugins
 
 4. Build the project
    ```sh
@@ -174,7 +175,9 @@ There are several ways to support and get involved in the OwlPlug development.
 
 ### Building Native Components
 
-The native host component (JUCE-based) is built separately using platform-specific build scripts:
+The native host component (JUCE-based) is built separately using platform-specific build scripts. **For detailed instructions on building and replacing these files in an existing installation, see [BUILD_INSTRUCTIONS.md](BUILD_INSTRUCTIONS.md).**
+
+Quick build commands:
 
 - **Linux**: `./build/build-host-linux.sh`
 - **macOS**: `./build/build-host-osx.sh`
