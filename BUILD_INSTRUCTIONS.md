@@ -1,30 +1,23 @@
-# Building OwlPlug With VST2 SDK
+# Building OwlPlug (Simple Guide)
 
-## Important Notice
+## Quick Start - Builds Without Special Files! ✅
 
-**VST2 support is enabled in this build configuration.** This means:
+**Good news:** This project is set up to build successfully **without needing VST2 SDK headers**.
 
-- ✅ VST2, VST3, AU, and LV2 plugin support are all functional
-- ⚠️ **You must provide the VST2 SDK headers to build the native components**
-- ❌ The project will NOT build without the VST2 SDK headers
+**What this means:**
+- ✅ **You can build right away** - no extra files needed
+- ✅ VST3, AU, and LV2 plugins will work
+- ❌ VST2 plugins won't work (but you can enable them later if needed)
 
-To build successfully, you must:
-1. Obtain the VST2 SDK headers (see `owlplug-host/external/vst2_sdk/README.md`)
-2. Place them in `owlplug-host/external/vst2_sdk/pluginterfaces/vst2.x/`
-3. Build the native components
+**If you need VST2 support:** Skip to the "Enabling VST2 Support" section at the bottom.
 
 ## Building the Native Host Component
 
-The native host component is a JNI library (JUCE-based) that handles plugin scanning and loading. This must be built separately from the Java application.
+The native host component is a library file that helps the app scan and load plugins. You need to build this separately from the main Java app.
 
 ### Prerequisites
 
-1. **VST2 SDK Headers**: Required for building
-   - Obtain `aeffect.h` and `aeffectx.h` from older VST3 SDK versions (pre-June 2018) or legacy JUCE versions (5.3.2 or older)
-   - Place in `owlplug-host/external/vst2_sdk/pluginterfaces/vst2.x/`
-   - See `owlplug-host/external/vst2_sdk/README.md` for detailed instructions
-
-2. **JUCE and Projucer**: Download Projucer first
+1. **JUCE and Projucer**: Download Projucer first
    ```bash
    ./build/download-projucer.sh
    ```
@@ -127,8 +120,8 @@ Look for it in:
 After replacing the library:
 1. Launch OwlPlug
 2. Try scanning a plugin directory
-3. Verify that VST2, VST3, AU, and LV2 plugins are detected
-4. **Note**: All plugin formats should be working with this build
+3. Verify that VST3, AU, and LV2 plugins are detected
+4. **Note**: VST2 plugins won't be detected unless you enabled VST2 support (see below)
 
 ## Building the Complete Application
 
@@ -157,21 +150,34 @@ mvn spring-boot:run
 - Verify the library was built for the correct architecture (x64)
 
 ### Build fails with VST2 SDK errors
-- Make sure you have placed the VST2 SDK headers in `owlplug-host/external/vst2_sdk/pluginterfaces/vst2.x/`
-- Required files: `aeffect.h` and `aeffectx.h`
-- See `owlplug-host/external/vst2_sdk/README.md` for instructions on obtaining the headers
+- This shouldn't happen with the current configuration (VST2 is disabled)
+- If you see VST2 errors, the configuration may have been changed
+- Make sure `JUCE_PLUGINHOST_VST="0"` in the `.jucer` file
 
-## Disabling VST2 Support (Optional)
+## Enabling VST2 Support (For Advanced Users)
 
-If you want to build without VST2 support (to avoid needing the SDK headers):
+**Note:** VST2 is currently disabled, so you don't need this to build.
 
-1. Edit `owlplug-host/src/main/juce/OwlPlugHost.jucer`:
-   - Change `JUCE_PLUGINHOST_VST="1"` to `JUCE_PLUGINHOST_VST="0"`
-   - Remove VST2 SDK path from headerPath for all platforms (remove `../../../../external/vst2_sdk` or `..\..\..\..\external\vst2_sdk`)
+If you want to enable VST2 plugin support:
 
-2. Edit `owlplug-host/src/main/juce/JuceLibraryCode/AppConfig.h`:
-   - Change `#define   JUCE_PLUGINHOST_VST 1` to `#define   JUCE_PLUGINHOST_VST 0`
+1. **Get the special files** (`aeffect.h` and `aeffectx.h`):
+   - Download old VST3 SDK (from before June 2018) OR
+   - Download old JUCE version 5.3.2
+   - Extract and find these two files
 
-3. Rebuild the native components using the build scripts above
+2. **Put them in the right place**:
+   - Copy the files to: `owlplug-host/external/vst2_sdk/pluginterfaces/vst2.x/`
 
-Note: With VST2 disabled, the application will not be able to scan or load VST2 plugins. VST3, AU, and LV2 will still work.
+3. **Change the settings**:
+   - Edit `owlplug-host/src/main/juce/OwlPlugHost.jucer`:
+     - Change `JUCE_PLUGINHOST_VST="0"` to `JUCE_PLUGINHOST_VST="1"`
+     - Add VST2 SDK path back to headerPath for all platforms
+
+4. **Edit another file**:
+   - Edit `owlplug-host/src/main/juce/JuceLibraryCode/AppConfig.h`:
+     - Change `#define JUCE_PLUGINHOST_VST 0` to `#define JUCE_PLUGINHOST_VST 1`
+
+5. **Rebuild everything**:
+   - Run the build scripts again (see above)
+
+For more detailed technical instructions, see `owlplug-host/external/vst2_sdk/README.md`.
